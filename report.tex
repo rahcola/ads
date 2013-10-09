@@ -1,0 +1,36 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{amsmath}
+
+\newcommand{\bigo}{O}
+\newcommand{\smallo}{o}
+
+\title{Succinct data structures}
+\author{Jani Rahkola}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Succinct data structures store data using near optimal amount of bits
+while still enabling efficient operations. The difference to
+compressed data structures is that succinct data structures allow
+operations without a preceding decompression. Also, the space effiency
+of the succinct data structures does not depend on the values of the
+input data, as might be the case with compressed data structures.
+
+Succinct data structures are divided into three groups based on how
+close they get to the optimal amount of space. Say $T$ is the optimal
+amount of bits needed to store the actual data. Now an structure
+taking $T + \bigo(1)$ bits is called \emph{implicit}. Classical
+examples of implicit data structures are the sorted array and the
+array backed binary heap.
+
+As a double use of the term, a data structure taking $T + \smallo(T)$
+bits is called \emph{succinct}. Classical example of a succinct data
+structure is the bit vector with constant time rank and select.
+\end{document}
