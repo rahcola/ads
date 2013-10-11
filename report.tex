@@ -7,6 +7,8 @@
 
 \newcommand{\bigo}{O}
 \newcommand{\smallo}{o}
+\newcommand{\rank}{\textit{rank}}
+\newcommand{\select}{\textit{select}}
 
 \title{Succinct data structures}
 \author{Jani Rahkola}
@@ -25,12 +27,110 @@ input data, as might be the case with compressed data structures.
 
 Succinct data structures are divided into three groups based on how
 close they get to the optimal amount of space. Say $T$ is the optimal
-amount of bits needed to store the actual data. Now an structure
-taking $T + \bigo(1)$ bits is called \emph{implicit}. Classical
-examples of implicit data structures are the sorted array and the
-array backed binary heap.
+amount of bits needed to store the actual data. The worst of the three
+is the class of \emph{compact} data structures where the structure can
+take $\bigo(T)$ bits of space.
 
 As a double use of the term, a data structure taking $T + \smallo(T)$
 bits is called \emph{succinct}. Classical example of a succinct data
 structure is the bit vector with constant time rank and select.
+
+Lastly, a structure taking $T + \bigo(1)$ bits is called
+\emph{implicit}. Classical examples of implicit data structures are
+the sorted array and the array backed binary heap. Implicit data
+structures are basically well chosen permutations of the data that
+allow fast queries to be made.
+
+In this report I will use the term \emph{redundancy} to mean the extra
+bits needed in addition to the optimal $T$ bits needed by the data
+structure. For example, to characterize succinct data structures using
+this termis to say that they have $\smallo(T)$ redundancy.
+
+Many of the succinct data structures are static, but some dynamic
+variations have been developed. For example, a dynamic variant for the
+rank and select bit vector is known.
+
+\section{Warm up}
+
+Lets consider the binary heap as a warm up. We are given $n$ $k$ bit
+integers in an array. This takes $nk$ bits and is the optimal space to
+store the integers. We can then construct the heap in place in
+$\bigo(n)$ time using the following algorithm by Floyd \cite{floyd64}.
+
+Consider the array as an almost complete binary tree. For every
+subtree, from the lowest to to the whole tree, move the root of the
+subtree down to its correct place. That is, when you heapify the
+subtree at level $k$, all the subtrees at level $k-1$ have already
+been heapified. Thus it suffices to move the root node to its correct
+place. This construction takes $\bigo(n)$ time.
+
+Now to delete the minimum (or maximum, depending on the heap) element,
+you move the last element in the array as the new root and decrese the
+size of the heap by one. You then move the new root down to its
+correct place. As the height of the tree is at most $log(n)$, the time
+it takes is $\bigo(log(n))$.
+
+Inserting an element is similar. You add the new node as the last
+element in the array and then move it upwards to its correct position.
+Once again this takes at most $\bigo(log(n))$ time.
+
+\section{Bit vector with rank and select}
+
+Consider a vector $V$ of bits indexed from $0$ upto $n-1$. For index
+$i$, $0 \le i < n$ function $\rank_1(i)$ returns the number of one
+bits in subvector $V[0:i+1]$, that is, the sum $\sum_{i=0}^{i} V[i]$.
+Say that $V$ has $o$ one bits. Now for $i$, $0 \le i \le o$ the
+function $\select_1(i)$ returns the index of the $i$th one bit.
+
+Both problems are easy to solve in linear space, as one can just store
+the answers for every index. Jacobson states \cite{jacobson89} that he
+solved these problems in his thesis \cite{jacobson88} using
+$\smallo(n)$ redundancy, that is, succinctly. His solution allows both
+\rank and \select in $\bigo(1)$ time.
+
+Jacobson's solution for \rank first divides the bit vector once and
+stores the answers to the query at every point of division. Then every
+chunk is divided again into subchunks and an answer relative to the
+chunk is stored at every point of subchunk division. By careful choice
+of sizes for the chunks and subchunks one can now afford to store a
+lookup table for the answers inside a subchunk with redundancy of
+still only $\smallo(n)$ bits.
+
+One such choice of sizes is to first dived to chunks of $\log^2(n)$
+bits. This means storing $\bigo(n / \log^2(n))$ answers of size at
+most $\log(n)$ bits. This takes $\bigo(n / \log(n)) = \smallo(n)$
+bits.
+
+We can then further divide into subchunks of $\log(\sqrt{n})$ bits.
+This time we need to store $\bigo(n / \log(n))$ answers. But as they
+are relative to the chunk, only at most $\log(\log^2(n))$ bits are
+needed to store them. This adds up to $\bigo(n\log(\log^2(n)) /
+\log(n)) = \smallo(n)$ bits.
+
+Thus we have reduced the problem to a size of $\log(\sqrt{n})$ bits.
+This means $2^{\log(\sqrt{n})}$ different answers of size at most
+$\log(\log(\sqrt{n}))$ bits. We need to store the answer for every
+$\log(\sqrt{n})$ positions so the lookup table takes $\bigo(\sqrt{n}
+\log(n) \log(\log(n)))$ bits which is $\smallo(n)$ of redundancy.
+
+Lets call the answers stored at the chunk level $C$, the answers
+stored at the subcunk level $SC$ and the lookup table $L$. Now the
+following algorithm answers the query $\rank_1(i)$.
+
+\begin{itemize}
+\item If $\log^2(n)$ divides $i$
+  \begin{itemize}
+  \item return $C[i / \log^2(n)]$.
+  \end{itemize}
+
+\item If $\log(\sqrt{n})$ divides $i$
+  \begin{itemize}
+  \item return $C[\lfloor i / \log^2(n)\rfloor ] + SB[i /
+    \log(\sqrt{n})]$.
+  \end{itemize}
+
+\item Return $C[\lfloor i / \log^2(n)\rfloor ] + SB[\lfloor i /
+  \log(\sqrt{n}) \rfloor] + L[i]$.
+\end{itemize}
+
 \end{document}
