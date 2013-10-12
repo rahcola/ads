@@ -23,7 +23,7 @@ while still enabling efficient operations. The difference to
 compressed data structures is that succinct data structures allow
 operations without a preceding decompression. Also, the space effiency
 of the succinct data structures does not depend on the values of the
-input data, as might be the case with compressed data structures.
+input data, as might be the case with a compressed data structure.
 
 Succinct data structures are divided into three groups based on how
 close they get to the optimal amount of space. Say $T$ is the optimal
@@ -44,7 +44,7 @@ allow fast queries to be made.
 In this report I will use the term \emph{redundancy} to mean the extra
 bits needed in addition to the optimal $T$ bits needed by the data
 structure. For example, to characterize succinct data structures using
-this termis to say that they have $\smallo(T)$ redundancy.
+this term is to say that they have $\smallo(T)$ redundancy.
 
 Many of the succinct data structures are static, but some dynamic
 variations have been developed. For example, a dynamic variant for the
@@ -132,5 +132,55 @@ following algorithm answers the query $\rank_1(i)$.
 \item Return $C[\lfloor i / \log^2(n)\rfloor ] + SB[\lfloor i /
   \log(\sqrt{n}) \rfloor] + L[i]$.
 \end{itemize}
+
+The solution for \select is similar to the solution for \rank. Once
+again the bit vector is divided and subdivided into chunks and
+subchunks small enough to store a lookup table of the answers in
+$\smallo(n)$ bits. But this time we cannot divided into chunks of
+equal size. We need to know in which chunk the $i$th one bit is. This
+means that the chunks must have equal amount of one bits, but they may
+be of different size.
+
+Now if a chunk is sparse, it has relatively few one bits, we can
+afford to store all the answers. If the chunk is dense, we need to
+subdivide. If a subchunk is spares, we can again just store the
+answers. But now also the dense subchunks are small enough, and we can
+use a lookup table of $\smallo(n)$ bits.
+
+While succinct with constant time queries, Jacobson's solution has a
+redundancy of $\bigo(n \log(\log(n)) / \log(n))$ bits. As Patrascu
+explains \cite{patrascu08}, the constant time query locks you in using
+a constant amount of subdivisions. In the worst case you have to
+branch to the lowest level of subdivision, and thus you can only
+afford a constant level of them.
+
+Patrascu was able to overcome this limitations with his recursive
+solution \cite{patrascu08} and achieved a redundancy of $\bigo(n /
+\log^k(n))$ with queries in $\bigo(k)$ time. That is, you get constant
+time queries when you set $k$ to be a constant, but $k$ can be
+arbitrary. This allows you to tune the amount of redundancy.
+
+The actual result of Patrascu is a succinct representation of
+augmented B-trees. A B-tree is a representation of $B^k = n$ elements
+for any $k$, where internal nodes have $B$ children and the elements
+are stored in the leafs. You then augment every leaf with a value that
+is a function of the element and every internal node with a value that
+is a function of the values of the children of the node.
+
+One can solve rank and select using an augmented B-tree
+\cite{patrascu08} by storing the bits in the leafs and augmenting
+internal nodes with the sum of its children. Using world-level
+parallelism one can do the queries in constant time \cite{patrascu08}.
+
+Patrascu shows \cite{patrascu08} that one can store an augmented
+B-tree of size $n$ of elements of set $\Sigma$ augmented with values
+of set $\Phi$ using $2$ bits and $\bigo(|\Sigma| + |\Phi|^{B+1} +
+B|\Phi|^B)$ words of redundancy. Patrascu gives the rank and select
+with the redundancy $\bigo(n / \log^k(n))$ as an application of these
+succinct augmented B-trees.
+
+\section{Binary tries}
+
+\section{Suffix arrays}
 
 \end{document}
