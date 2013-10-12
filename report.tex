@@ -179,8 +179,98 @@ B|\Phi|^B)$ words of redundancy. Patrascu gives the rank and select
 with the redundancy $\bigo(n / \log^k(n))$ as an application of these
 succinct augmented B-trees.
 
-\section{Binary tries}
+\section{Binary trees}
+
+Jacobson uses the rank and select operations to represent a binary
+tree using $\smallo(n)$ redundancy \cite{jacobson89}. The supported
+operations are \textit{left-child}, \textit{right-child} and
+\textit{parent} in $\bigo(1)$ time. Jacobson's solution is a
+level-order representation of the tree enconded as follows.
+
+First add marker nodes to the tree so that every original node has two
+children. Then travers the tree in level-order, that is from left to
+right and top to bottom, and mark into a bit vector a one for every
+original node and zero for every marker node. Now the following holds.
+
+\begin{align*}
+  \textit{left-child}(i) &= 2\rank_1(i) \\
+  \textit{right-child}(i) &= 2\rank_1(i) + 1 \\
+  \textit{parent}(i) &= \select_1(\lfloor i / 2 \rfloor )
+\end{align*}
+
+Travers a tree in depth-first order and mark an open paren when you
+visit a node for the first time, and a closing paren when you leave a
+node for the last time. This gives you a representation called
+balanced parentheses which can be encoded as a bit vector. Using this
+representation Munro and Raman managed to support a one additional
+operation, \textit{subtree-size} in constant time with the same
+$\smallo(n)$ redundancy \cite{munro01}.
+
+\section{K-ary and other trees}
+
+Suffix trees are an important data structure in string processing that
+store all the suffixes of a text in a compressed tree. When
+implementing a suffix tree one has to choose a representation for the
+child relation, where the children can be labeled with arbitrary
+strings. One representation for this relation is a \emph{k-ary tree},
+where every node has at most $k$ children, labeled from a set
+$\Sigma$. The k-ary tree can store the child relation if we choose
+$\Sigma$ to be the alphabet of our string.
+
+Farzan and Munro show \cite{farzan08} how one can store a k-ary tree
+with $\smallo(n\log(k))$ redundancy while supporting constant time
+\textit{child} operation. This means that for a small alphabet the
+child relation takes very little space. Farzan and Munro also show
+that all the standard operations for a k-ary tree, for example
+\textit{subtree-size} can be supported and that the same technique can
+be used to represent what they call \emph{free trees}, trees that have
+no order between the children of a node.
 
 \section{Suffix arrays}
+
+Suffix array is an array representation of the suffix tree. In index
+$i$ of the array is the starting index of the $i+1$th (if $0 \le i <
+n$) suffix of the text in lexicographical order. The advantage of the
+array over the tree is the amount of space it requires.
+State-of-the-art representations are also \emph{self-indexing}, that
+is, they can return the result of any query without the original text.
+
+The first (by Ferragina et al. \cite{ferragina07}) succinct and
+self-indexing representation for a suffix array was the
+\emph{FM-index} introduced by Ferragina and Manzini
+\cite{ferragina05}. For a text $T$ it uses $5nH_k(T) + \smallo(|T|)$
+bits where $H_k(T)$ is the k-order entropy of $T$. For a pattern $P$
+it takes $\bigo(|P|)$ time to count the number of occurencies and
+$\bigo(\log^{1+\epsilon}(|T|))$ time to locate them. As the FM-index
+is self-indexing it can also display any substring $S$ of the text and
+does it in $\bigo(|S| + \log^{1+\epsilon}(|T|)$ time.
+
+The FM-index consists of three parts: a Burrows-Wheeler transform
+(BWT) \cite{burrows94} of the text, a table $C$ which tells for every
+character $c$ the number of occurencies in the text of characters
+smaller than $c$ and a function $\texttt{Occ}(c,k)$ which tells the
+number of occurencies of character $c$ in the prefix of length $k$ of
+the BWT. All these are compressed together to achive the space bound
+and can be used to answer suffix array queries.
+
+Sadakane introduced \emph{compressed suffix arrays} \cite{sadakane02}
+as an different kind of solution to the problem. It was later seen
+that they were actually an implementation of the FM-index idea.
+Sadakane represents the BWT as a bit vector for every character in the
+alphabet. This gives a space bound of $nH_0(T) + \bigo(|T|)$ which
+works for any alphabet of size $\bigo(\log(|T|)^{\bigo(1)})$ unlike
+the FM-index which assumes a constant alphabet and has an exponential
+space dependency to it \cite{ferragina07}.
+
+Ferragina et al. improve \cite{ferragina07} on the previous results on
+FM-indices. They combine their generalization of wavelet trees with an
+compression technique for the BWT by Ferragina et al.
+\cite{ferragina05} and achieve a structure that takes $nH_k(T) +
+\bigo(n / \log^{\epsilon}(n))$ bits. Counting occurencies of a pattern
+$P$ takes $\bigo(|P|)$ time, locating them
+$\bigo(\log^{1+\epsilon}(|T|))$ time and displaying a substring $S$
+$\bigo(|S| + \log^{1+\epsilon}(|T|))$ time. The difference to the
+original FM-index is that this solution works for any alphabet
+$\Sigma$ of size $\log(|T|)^{\bigo(1)}$.
 
 \end{document}
