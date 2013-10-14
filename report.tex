@@ -160,7 +160,7 @@ solution \cite{patrascu08} and achieved a redundancy of $\bigo(n /
 time queries when you set $k$ to be a constant, but $k$ can be
 arbitrary. This allows you to tune the amount of redundancy.
 
-The actual result of Patrascu is a succinct representation of
+The main result of Patrascu is a succinct representation of
 augmented B-trees. A B-tree is a representation of $B^k = n$ elements
 for any $k$, where internal nodes have $B$ children and the elements
 are stored in the leafs. You then augment every leaf with a value that
@@ -178,6 +178,52 @@ of set $\Phi$ using $2$ bits and $\bigo(|\Sigma| + |\Phi|^{B+1} +
 B|\Phi|^B)$ words of redundancy. Patrascu gives the rank and select
 with the redundancy $\bigo(n / \log^k(n))$ as an application of these
 succinct augmented B-trees.
+
+\section{Wavelet tree}
+
+To implement compressed suffix arrays, to which we come later in this
+report, Grossi et al. introduced the \emph{wavelet tree}
+\cite{grossi03}. It is a generalization of the bit vector in the sense
+that it can answer \rank and \select queries over any alphabet, not
+just $\{0, 1\}$.
+
+It is easy to see that the time taken by the generalized \rank and
+\select queries is bounded by the height of the tree which is
+$\bigo(\log(\sigma))$.
+
+The symbols of the alphabet are represented by the leafs of the tree.
+For every two leafs, the parent of them represents the (non-contiguos)
+substring of the original text that contains just the two symbols of
+its children. The substring itself is not stored but a succinct bit
+vector where in position $i$ a zero bit represents the symbol of the
+left child and a one bit the symbol of the right child.
+
+In the general case a zero bit in the nodes bit vector represents any
+symbol in the nodes left subtree and a one bit any symbol in the right
+subtree. That is, a node represents a subset of the alphabet of the
+whole string. Into that subset belongs every symbol represented by a
+leaf in the nodes left and right subtree.
+
+Navarro gives a survey into the many uses of wavelet trees and gives
+an clear explanation of how \rank and \select are done
+\cite{navarro12}. Assume indices starting from one for this and the
+following paragraph. To answer $\rank_s(i)$ we start at the root and
+assign $i \gets \rank_0(i)$ if the leaf $s$ is in the left subtree or
+$i \gets \rank_1(i)$ otherwise. Now we recurse with the new $i$ into
+the subtree where the leaf of the symbol is. When we arrive at a leaf,
+$i$ holds the answer.
+
+To answer $\select_s(i)$ we start at the leaf $s$. We set $i \gets
+\select_0(i)$ if the leaf is the left child and $\i \gets
+\select_1(i)$ otherwise. Now we recurse with the new $i$ to the parent
+of the node. When we arrive at the root, $i$ holds the answer.
+
+The wavelet tree can be said to be succinct, as with a good
+implementation it uses $n\log(\sigma) + \smallo(n)\log(\sigma)$ bits
+for a string of length $n$ from an alphabet of size $\sigma$
+\cite{navarro12}. With a good choice of bit vector implementation, the
+precise redundancy can be lowered to $\bigo(n\log(\sigma)\log(\log(n))
+/ \log^2(n)) = \smallo(n)$ \cite{navarro12}.
 
 \section{Binary trees}
 
@@ -235,8 +281,8 @@ array over the tree is the amount of space it requires.
 State-of-the-art representations are also \emph{self-indexing}, that
 is, they can return the result of any query without the original text.
 
-The first (by Ferragina et al. \cite{ferragina07}) succinct and
-self-indexing representation for a suffix array was the
+The first (according to Ferragina et al. \cite{ferragina07}) succinct
+and self-indexing representation for a suffix array was the
 \emph{FM-index} introduced by Ferragina and Manzini
 \cite{ferragina05}. For a text $T$ it uses $5nH_k(T) + \smallo(|T|)$
 bits where $H_k(T)$ is the k-order entropy of $T$. For a pattern $P$
@@ -246,11 +292,11 @@ is self-indexing it can also display any substring $S$ of the text and
 does it in $\bigo(|S| + \log^{1+\epsilon}(|T|)$ time.
 
 The FM-index consists of three parts: a Burrows-Wheeler transform
-(BWT) \cite{burrows94} of the text, a table $C$ which tells for every
+\cite{burrows94} (BWT) of the text, a table $C$ which tells for every
 character $c$ the number of occurencies in the text of characters
 smaller than $c$ and a function $\texttt{Occ}(c,k)$ which tells the
 number of occurencies of character $c$ in the prefix of length $k$ of
-the BWT. All these are compressed together to achive the space bound
+the BWT. All these are compressed together to achieve the space bound
 and can be used to answer suffix array queries.
 
 Sadakane introduced \emph{compressed suffix arrays} \cite{sadakane02}
@@ -263,8 +309,8 @@ the FM-index which assumes a constant alphabet and has an exponential
 space dependency to it \cite{ferragina07}.
 
 Ferragina et al. improve \cite{ferragina07} on the previous results on
-FM-indices. They combine their generalization of wavelet trees with an
-compression technique for the BWT by Ferragina et al.
+FM-indices. They combine their k-ary generalization of wavelet trees
+with an compression technique for the BWT by Ferragina et al.
 \cite{ferragina05} and achieve a structure that takes $nH_k(T) +
 \bigo(n / \log^{\epsilon}(n))$ bits. Counting occurencies of a pattern
 $P$ takes $\bigo(|P|)$ time, locating them
@@ -273,4 +319,6 @@ $\bigo(|S| + \log^{1+\epsilon}(|T|))$ time. The difference to the
 original FM-index is that this solution works for any alphabet
 $\Sigma$ of size $\log(|T|)^{\bigo(1)}$.
 
+\bibliographystyle{plain}
+\bibliography{report}
 \end{document}
