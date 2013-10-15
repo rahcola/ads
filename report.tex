@@ -175,14 +175,14 @@ parallelism one can do the queries in constant time \cite{patrascu08}.
 Patrascu shows \cite{patrascu08} that one can store an augmented
 B-tree of size $n$ of elements of set $\Sigma$ augmented with values
 of set $\Phi$ using $2$ bits and $\bigo(|\Sigma| + |\Phi|^{B+1} +
-B|\Phi|^B)$ words of redundancy. Patrascu gives the rank and select
-with the redundancy $\bigo(n / \log^k(n))$ as an application of these
-succinct augmented B-trees.
+B|\Phi|^B)$ words of redundancy. Patrascu gives the rank and select in
+$\bigo(k)$ time with the redundancy $\bigo(n / \log^k(n))$ as an
+application of these succinct augmented B-trees.
 
 \section{Wavelet tree}
 
 To implement compressed suffix arrays, to which we come later in this
-report, Grossi et al. introduced the \emph{wavelet tree}
+report, Grossi et al.\ introduced the \emph{wavelet tree}
 \cite{grossi03}. It is a generalization of the bit vector in the sense
 that it can answer \rank and \select queries over any alphabet, not
 just $\{0, 1\}$.
@@ -249,15 +249,34 @@ visit a node for the first time, and a closing paren when you leave a
 node for the last time. This gives you a representation called
 balanced parentheses which can be encoded as a bit vector. Using this
 representation Munro and Raman managed to support a one additional
-operation, \textit{subtree-size} in constant time with the same
-$\smallo(n)$ redundancy \cite{munro01}.
+operation, \textit{subtree-size} with the same $\smallo(n)$ redundancy
+\cite{munro01a}.
 
-\section{K-ary and other trees}
+The previous representations are both static. This means that insert
+or delete operations require one to reconstruct the whole tree. This
+is fine if the structure is used as an index to some static data, but
+sometimes we need to do updates.
 
-Suffix trees are an important data structure in string processing that
-store all the suffixes of a text in a compressed tree. When
-implementing a suffix tree one has to choose a representation for the
-child relation, where the children can be labeled with arbitrary
+Munro et al.\ introduce \cite{munro01b} a dynamic binary tree that
+supports the basic operations, including \textit{subtree-size} in
+$\bigo(\log(n))$ time, and \textit{insert} and \textit{delete} in
+amortized $\bigo(\log^2(n))$ time. The structure has a redundancy of
+$\smallo(n)$ bits. Unlike the two previous methods which encode the
+tree into a ``flat'' structure, the dynamic version by Munro et al.\
+uses a scheme more like the one in the bit vector implementation. The
+tree is divided into small trees and then again into tiny trees. These
+tiny trees are small enough to represent using a lookup table.
+
+\section{Suffix, k-ary and other trees}
+
+Suffix trees are an important data structure in string processing,
+introduced by Weiner \cite{weiner73}, that store all the suffixes of a
+text in a compressed tree. The tree can be used to answer many
+interesting queries about the text, including a search for a pattern
+$P$ in $\bigo(|P|)$ time.
+
+When implementing a suffix tree one has to choose a representation for
+the child relation, where the children can be labeled with arbitrary
 strings. One representation for this relation is a \emph{k-ary tree},
 where every node has at most $k$ children, labeled from a set
 $\Sigma$. The k-ary tree can store the child relation if we choose
@@ -274,14 +293,18 @@ no order between the children of a node.
 
 \section{Suffix arrays}
 
-Suffix array is an array representation of the suffix tree. In index
-$i$ of the array is the starting index of the $i+1$th (if $0 \le i <
-n$) suffix of the text in lexicographical order. The advantage of the
-array over the tree is the amount of space it requires.
-State-of-the-art representations are also \emph{self-indexing}, that
-is, they can return the result of any query without the original text.
+Suffix array is an array representation of the lexicographically
+sorted suffices of a text. In index $i$ of the array is the starting
+index of the $i+1$th (if $0 \le i < n$) suffix of the text in
+lexicographical order. The suffix arrays stores the same information
+as the suffix tree and like the tree can be used for fast pattern
+search. The advantage of the array over the tree is the amount of
+space it requires. State-of-the-art representations are also
+\emph{self-indexing}, that is, they can return the result of any query
+without the original text. This further reduces the amount of space
+needed as one does not need to store the text anymore.
 
-The first (according to Ferragina et al. \cite{ferragina07}) succinct
+The first (according to Ferragina et al.\ \cite{ferragina07}) succinct
 and self-indexing representation for a suffix array was the
 \emph{FM-index} introduced by Ferragina and Manzini
 \cite{ferragina05}. For a text $T$ it uses $5nH_k(T) + \smallo(|T|)$
@@ -308,9 +331,9 @@ works for any alphabet of size $\bigo(\log(|T|)^{\bigo(1)})$ unlike
 the FM-index which assumes a constant alphabet and has an exponential
 space dependency to it \cite{ferragina07}.
 
-Ferragina et al. improve \cite{ferragina07} on the previous results on
-FM-indices. They combine their k-ary generalization of wavelet trees
-with an compression technique for the BWT by Ferragina et al.
+Ferragina et al.\ improve \cite{ferragina07} on the previous results
+on FM-indices. They combine their k-ary generalization of wavelet
+trees with an compression technique for the BWT by Ferragina et al.\
 \cite{ferragina05} and achieve a structure that takes $nH_k(T) +
 \bigo(n / \log^{\epsilon}(n))$ bits. Counting occurencies of a pattern
 $P$ takes $\bigo(|P|)$ time, locating them
